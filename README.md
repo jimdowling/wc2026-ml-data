@@ -1,17 +1,25 @@
 # World Cup 2026 — Feature Group Loader
 
 `build_wc2026_recent_results.py` loads the raw World Cup 2026 CSV datasets in
-`data/` into the [Hopsworks](https://www.hopsworks.ai/) feature store. Each
-`data/*.csv` file is written to its own **offline feature group**, named after
-the CSV file.
+`data/` into the [Hopsworks](https://www.hopsworks.ai/) feature store and
+downloads the recent match results for every WC2026 team. Each `data/*.csv`
+file is written to its own **offline feature group**, named after the CSV file,
+and the recent results are written to the `wc2026_recent_results` feature group.
 
 ## What gets loaded
 
-| CSV file | Feature group | Primary key | Event time |
-|----------|---------------|-------------|------------|
+| Source | Feature group | Primary key | Event time |
+|--------|---------------|-------------|------------|
 | `data/elo_ratings.csv` | `elo_ratings` | `country, date` | `date` |
 | `data/fifa_ratings.csv` | `fifa_ratings` | `country, date` | `date` |
 | `data/FIFA2026_schedule_Fixtures.csv` | `fifa2026_schedule_fixtures` | `match_number` | `date_dt` |
+| openfootball/internationals (downloaded) | `wc2026_recent_results` | `country, date, opposition_country` | `date` |
+
+The `wc2026_recent_results` feature group holds the **20 most recent** men's
+senior international matches per WC2026 team, downloaded from
+[openfootball/internationals](https://github.com/openfootball/internationals)
+(48 teams × 20 = 960 rows). Pass `--skip-recent-results` to load only the
+`data/*.csv` feature groups.
 
 Any other CSV dropped into `data/` is loaded automatically: the feature group
 name is derived from the filename, the event time is taken from a `date` column
@@ -59,6 +67,9 @@ python build_wc2026_recent_results.py
 |------|---------|-------------|
 | `--data-dir` | `data` | Directory of CSV files to load |
 | `--fg-version` | `1` | Feature group version to create / append to |
+| `--before-date` | `2026-06-10` | Only include recent-result matches on or before this date |
+| `--repo-zip` | openfootball URL | Source zip URL or local path for recent results |
+| `--skip-recent-results` | _off_ | Load only the `data/*.csv` feature groups |
 
 Examples:
 
