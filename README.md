@@ -1,128 +1,95 @@
-# World Cup 2026 — ML Predictions
+# World Cup 2026 — Feature Group Loader
 
-A machine-learning pipeline that predicts FIFA World Cup 2026 results. An XGBoost
-model is trained on the last competitive matches of every qualified team
-(enriched with pre-match Elo and FIFA ratings), then used to run a Monte-Carlo
-simulation of the whole tournament — group stage through the final.
+`build_wc2026_recent_results.py` loads the raw World Cup 2026 CSV datasets in
+`data/` into the [Hopsworks](https://www.hopsworks.ai/) feature store. Each
+`data/*.csv` file is written to its own **offline feature group**, named after
+the CSV file.
 
-The project runs on [Hopsworks](https://www.hopsworks.ai/) and follows the
-**Feature / Training / Inference (FTI)** pipeline architecture for MLOps.
+## What gets loaded
 
-## Architecture
+| CSV file | Feature group | Primary key | Event time |
+|----------|---------------|-------------|------------|
+| `data/elo_ratings.csv` | `elo_ratings` | `country, date` | `date` |
+| `data/fifa_ratings.csv` | `fifa_ratings` | `country, date` | `date` |
+| `data/FIFA2026_schedule_Fixtures.csv` | `fifa2026_schedule_fixtures` | `match_number` | `date_dt` |
 
-```
-                ┌─────────────────┐
-  raw CSVs ───► │ FEATURE pipeline │ ──► Feature Store (offline feature groups)
-                └─────────────────┘            │
-                                               ▼
-                                     ┌──────────────────┐
-                                     │ TRAINING pipeline │ ──► Model Registry
-                                     └──────────────────┘   (wc2026_match_result_xgb)
-                                               │
-                        ┌──────────────────────┴───────────────────────┐
-                        ▼                                               ▼
-              ┌────────────────────┐                        ┌─────────────────────┐
-              │ INFERENCE pipeline │ ──► prediction          │  Streamlit app       │
-              │  (batch job)       │     feature groups       │  (Monte-Carlo sim)   │
-              └────────────────────┘            │            └─────────────────────┘
-                                                ▼
-                                       ┌──────────────────┐
-                                       │ Superset dashboard│
-                                       └──────────────────┘
-```
+Any other CSV dropped into `data/` is loaded automatically: the feature group
+name is derived from the filename, the event time is taken from a `date` column
+if present, and the primary key defaults to `country, date` (or the first
+column).
 
-- **Feature store** holds historical match data and pre-match ratings as offline
-  feature groups (`wc2026_qualified_teams_matches`,
-  `wc2026_qualified_teams_match_ratings`, `wc2026_schedule`).
-- **Model registry** holds the trained classifier `wc2026_match_result_xgb`
-  (multi-class: Loss / Draw / Win, from the perspective of the listed team).
-- **Inference** writes predictions back to the feature store
-  (`wc2026_match_predictions`, `wc2026_group_standings`,
-  `wc2026_championship_odds`) for consumption by the dashboard.
+## Prerequisites
 
-## Repository layout
+- Python 3.10+
+- A Hopsworks project and an API key.
 
-```
-.
-├── data/                       # Raw input CSVs (qualified-team match history + ratings)
-├── pipelines/
-│   ├── feature/                # Build raw datasets → load into feature groups
-│   │   ├── build_wc2026_recent_results.py   # source recent results from openfootball
-│   │   └── load_wc2026_feature_groups.py    # write CSVs to offline feature groups
-│   ├── training/
-│   │   └── train_match_result.py            # train + register the XGBoost model
-│   └── inference/
-│       └── batch_inference_wc2026.py        # Monte-Carlo rollout → prediction FGs
-├── app/
-│   └── app.py                  # Streamlit Monte-Carlo tournament simulator
-├── dashboard/
-│   └── build_wc2026_dashboard.py            # build the Superset dashboard
-├── deployment/                 # Hopsworks deployment / orchestration scripts
-│   ├── setup_env.py            #   create the app Python environment
-│   ├── deploy_app.py           #   create + start the Streamlit app
-│   └── deploy_batch_inference_job.py        #   register the batch-inference job
-├── requirements/
-│   └── inference-requirements.txt           # extra libs for the app environment
-└── README.md
-```
-
-## Pipelines
-
-### 1. Feature pipeline — `pipelines/feature/`
-- `build_wc2026_recent_results.py` — fetches the most recent men's senior
-  international matches per qualified team from the openfootball dataset and
-  writes a CSV.
-- `load_wc2026_feature_groups.py` — reads the prepared CSVs and writes them to
-  three offline feature groups.
-
-### 2. Training pipeline — `pipelines/training/train_match_result.py`
-Builds a feature view (match history joined with Elo/FIFA ratings on
-`(qualified_team, match_id)`), engineers pre-match-only features (no score
-leakage), trains an XGBoost multi-class classifier, and registers it along with
-evaluation plots and metrics in the model registry.
-
-### 3. Inference pipeline — `pipelines/inference/batch_inference_wc2026.py`
-Downloads the model, predicts W/D/L probabilities for every fixture, runs an
-N-iteration Monte-Carlo rollout of the tournament, and materialises the results
-into the prediction feature groups. Runs headless as a Hopsworks PYTHON job.
-
-### Serving
-- `app/app.py` — Streamlit app that renders the live Monte-Carlo simulation
-  (group qualification probabilities + knockout bracket).
-- `dashboard/build_wc2026_dashboard.py` — builds a published Superset dashboard
-  over the prediction feature groups (read via Trino).
-
-## Running on Hopsworks
-
-> **Note:** The scripts authenticate with `hopsworks.login()` and reference
-> paths inside the Hopsworks project (e.g. `Users/meb10000/app.py`,
-> `/hopsfs/Users/meb10000/...`). Upload the data files and scripts to your
-> Hopsworks project's dataset and adjust those path constants to match your
-> username before running.
+Install dependencies (a virtualenv is recommended):
 
 ```bash
-# 1. Load the feature groups
-python pipelines/feature/load_wc2026_feature_groups.py
-
-# 2. Train and register the model
-python pipelines/training/train_match_result.py
-
-# 3. (Batch inference) register and run the job
-python deployment/deploy_batch_inference_job.py
-hops job run wc2026-batch-inference --wait
-hops job schedule wc2026-batch-inference "0 0 6 * * ?"   # daily 06:00 UTC
-
-# 4. (App) create the environment, then deploy the Streamlit app
-python deployment/setup_env.py
-python deployment/deploy_app.py
-
-# 5. (Dashboard) build the Superset dashboard
-python dashboard/build_wc2026_dashboard.py
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-## Requirements
+## Authenticating with Hopsworks
 
-- A Hopsworks project and the `hopsworks` Python client (`pip install hopsworks`).
-- The app environment additionally needs the libraries in
-  `requirements/inference-requirements.txt` (streamlit, xgboost 3.2.0,
-  scikit-learn, matplotlib, joblib) — installed via `deployment/setup_env.py`.
+The program calls `hopsworks.login()`. Provide credentials in one of these ways:
+
+- **Environment variables** (recommended for non-interactive runs):
+
+  ```bash
+  export HOPSWORKS_HOST="my-instance.hopsworks.ai"
+  export HOPSWORKS_PROJECT="my_project"
+  export HOPSWORKS_API_KEY="<your-api-key>"
+  ```
+
+- **Interactive login** — run the program and paste your API key when prompted.
+
+## Running
+
+From the project root:
+
+```bash
+python build_wc2026_recent_results.py
+```
+
+### Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--data-dir` | `data` | Directory of CSV files to load |
+| `--fg-version` | `1` | Feature group version to create / append to |
+
+Examples:
+
+```bash
+# Load CSVs from a different directory
+python build_wc2026_recent_results.py --data-dir ./my_csvs
+
+# Write to version 2 of the feature groups
+python build_wc2026_recent_results.py --fg-version 2
+```
+
+## Output
+
+For each CSV the program prints the target feature group, row count, and
+columns, then inserts the rows. A summary is printed at the end:
+
+```
+Found 3 CSV file(s) in data/
+Logging in to Hopsworks ...
+Loading data/FIFA2026_schedule_Fixtures.csv ...
+  -> feature group 'fifa2026_schedule_fixtures' (v1), 104 rows, columns: [...]
+Loading data/elo_ratings.csv ...
+  -> feature group 'elo_ratings' (v1), 768 rows, columns: [...]
+Loading data/fifa_ratings.csv ...
+  -> feature group 'fifa_ratings' (v1), 454 rows, columns: [...]
+
+Done. Loaded feature groups:
+  - fifa2026_schedule_fixtures: 104 rows
+  - elo_ratings: 768 rows
+  - fifa_ratings: 454 rows
+```
+
+The feature groups are then available in the Hopsworks UI under your project's
+Feature Store.
