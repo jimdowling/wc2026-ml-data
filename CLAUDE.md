@@ -65,7 +65,7 @@ creation and the model training in the same `train.py` file** — a single scrip
 that creates the feature view first and then trains and registers the model
 (do not split them into separate scripts):
 
-- Create a feature view by selecting features from the 3 historical feature groups.
+- Create a feature view by selecting features from the 3 historical feature groups (load hops-fv skill).
 - When reading training data as a Pandas DF filter the last N games per team; filter out friendly matches unless the user opted to include them.
 - Hold out the most recent N games per team as the test set.
 - Train an **XGBoost** classifier (multi-class: Loss / Draw / Win from the listed team's perspective)

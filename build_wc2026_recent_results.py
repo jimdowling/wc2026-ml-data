@@ -40,12 +40,12 @@ import pandas as pd
 # key from country/date if present).
 FG_CONFIG: dict[str, dict] = {
     "elo_ratings.csv": {
-        "primary_key": ["country", "date"],
+        "primary_key": ["country"],
         "event_time": "date",
         "description": "Pre-match Elo ratings per country over time.",
     },
     "fifa_ratings.csv": {
-        "primary_key": ["country", "date"],
+        "primary_key": ["country"],
         "event_time": "date",
         "description": "FIFA world ranking points per country over time.",
     },
