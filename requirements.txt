@@ -1,3 +1,8 @@
-requests 
-pandas 
-openpyxl
+requests
+pandas
+hopsworks
+xgboost
+scikit-learn
+numpy
+streamlit
+# python-dateutil
