@@ -24,6 +24,22 @@ The slow parts of this build are **rediscovering the data model** and the
 4. **Heed the gotchas** in "Gotchas that cost time" before writing code — each
    one cost a wasted run the first time.
 
+## Project layout
+
+Python files you create must follow best practice: put them under a **`src/`**
+directory, organised into one subdirectory per pipeline:
+
+```
+src/
+  feature/    # feature pipeline — source-data loaders, derived match-features FG
+  training/   # training pipeline — feature-view creation + train.py (model)
+  app/        # app (inference) pipeline — app.py, _selftest.py, .streamlit/, app-requirements.txt
+```
+
+Place each script in the subdir for the pipeline it belongs to (feature,
+training, or app/inference). Paths elsewhere in this file (e.g.
+`app/app.py`, `train.py`) refer to files within these `src/` subdirs.
+
 ## Workflow
 
 ### Step 1 — Ask whether to build the model
