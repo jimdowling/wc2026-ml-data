@@ -31,8 +31,9 @@ directory, organised into one subdirectory per pipeline:
 
 ```
 src/
-  feature/    # feature pipeline — source-data loaders, derived match-features FG
-  training/   # training pipeline — feature-view creation + train.py (model)
+  feature/    # feature pipeline — source-data loaders for the spine + rating FGs
+              # (no derived PiT feature group — the feature view does the PiT join)
+  training/   # training pipeline — feature-view creation (PiT join) + train.py (model)
   app/        # app (inference) pipeline — app.py, _selftest.py, .streamlit/, app-requirements.txt
 ```
 
@@ -78,7 +79,10 @@ Use **AskUserQuestion** to ask whether to generate the four source data tables:
 recent match results, FIFA ratings, Elo ratings, and the WC 2026 schedule.
 
 - If **Yes**, generate the data and load it into the feature groups (see
-  "Loading data" below), then proceed to Step 4.
+  "Loading data" below), then proceed to Step 4. **Every one of the four created
+  feature groups must have per-feature descriptions** — give each column a clear,
+  one-line description so the columns are not empty envelopes in the UI (see
+  "Loading data").
 - If **No**, stop — the model cannot be built without the feature groups.
 
 If all four feature groups already existed in Step 2, proceed directly to Step 4.
@@ -105,21 +109,33 @@ that creates the feature view first and then trains and registers the model
   *is* the model's input schema** (load hops-fv skill). Do not compute model
   features ad-hoc in `train.py` or the app; engineer them into the feature store
   so the same columns flow through the FV in both training and serving.
-  - In the feature pipeline, build a derived **match-features feature group**
-    (one row per historical match, from the listed team's perspective) holding
-    **all** model inputs and the label. Compute the team's ratings by PIT-joining
-    `elo_ratings`/`fifa_ratings` on `country` and the **opponent's** by joining on
-    `opposition_country`; apply the alias map (Reference) so e.g. `Türkiye`/`USA`
-    resolve. Columns: `home`, `is_friendly`, `team_elo`, `opp_elo`, `elo_diff`,
-    `team_rank`, `opp_rank`, `rank_diff`, `team_points`, `opp_points`,
-    `points_diff`, label `result`, plus keys/helpers `country`,
-    `opposition_country`, `date` for splitting (not model inputs). This set
-    worked: accuracy ≈ 0.50, ROC-AUC ≈ 0.65 on the 3-way label.
-  - The feature view `select_all`s that FG with `labels=["result"]` (event-time
-    keys as `training_helper_columns`). `train.py` then reads
-    `X, y = fv.training_data()` where **X already is exactly the model inputs and
-    y the label** — no feature engineering in the training script. The model's
-    input schema = the FV schema minus the label.
+  - **Do *not* build a derived feature group that holds Point-in-Time-correct
+    feature data** (i.e. do not pre-compute/materialize PIT-joined `team_elo` /
+    `opp_elo` / … rows into a `match-features` FG in the feature pipeline). **The
+    feature view creates the PiT-correct training data** — Hopsworks performs the
+    event-time-aware (as-of) join when it builds the training data, so PiT
+    correctness belongs to the FV, not to a snapshotted FG.
+  - Keep the source feature groups as the building blocks: the match "spine"
+    `wc2026_recent_results` carries the label `result` and the per-match inputs
+    `home`/`is_friendly` plus the keys/event-time (`country`,
+    `opposition_country`, `date`); the rating FGs `elo_ratings` / `fifa_ratings`
+    are keyed by `country` with event-time `date` (see Gotcha #2). The feature
+    view then **joins the spine to the rating FGs to get the team's ratings
+    (join on `country`) and the opponent's ratings (join on `opposition_country`)**;
+    because the rating FGs have an event time, the join returns the rating *as of
+    the match date* — that is the PiT join, done by the FV. Apply the alias map
+    (Reference) so e.g. `Türkiye`/`USA` resolve before the join.
+  - The resulting FV columns are exactly the model inputs `home`, `is_friendly`,
+    `team_elo`, `opp_elo`, `elo_diff`, `team_rank`, `opp_rank`, `rank_diff`,
+    `team_points`, `opp_points`, `points_diff` plus label `result` (with
+    `country`, `opposition_country`, `date` as keys/helpers for splitting, not
+    model inputs). Compute the `*_diff` columns as **transformations on the FV**
+    (not as stored FG columns), so they are defined once and the FV — not a
+    derived FG — owns the engineered features. This set worked: accuracy ≈ 0.50,
+    ROC-AUC ≈ 0.65 on the 3-way label.
+  - `train.py` then reads `X, y = fv.training_data()` where **X already is exactly
+    the model inputs and y the label** — no feature engineering in the training
+    script. The model's input schema = the FV schema minus the label.
   - For scoring new fixtures the app must produce the **identical** feature row
     through the same feature view (register the rating-lookup + diff logic as
     **on-demand transformations** on the FV so two team names map to the engineered
@@ -234,7 +250,21 @@ python build_wc2026_recent_results.py
 ```
 
 This creates `elo_ratings`, `fifa_ratings`, and `fifa2026_schedule_fixtures`
-from `data/`. See `README.md` for details and options.
+from `data/` (plus `wc2026_recent_results` from the download). See `README.md`
+for details and options.
+
+**Each of the four created feature groups must carry per-feature descriptions.**
+Set a one-line `description` on every column (not just the feature-group-level
+description) so each FG documents its own schema — e.g. via the `features=`
+argument of `get_or_create_feature_group` (a list of `Feature(name, type,
+description=...)`) or by calling `feature.description = "..."` /
+`fg.update_feature_description(...)` after creation. Cover all four FGs:
+`elo_ratings` (`country`, `date`, `elo_rating`), `fifa_ratings` (`country`,
+`date`, `ranking`, `points`), `fifa2026_schedule_fixtures` (`date`,
+`match_number`, `teams`, `group`, `stadium`, `date_dt`), and
+`wc2026_recent_results` (all columns listed under "Reference data"). An
+undescribed feature is an empty envelope in the UI; describe the columns at the
+FG so the descriptions flow through to any feature view built on them.
 
 
 ## Gotchas that cost time (read before coding)

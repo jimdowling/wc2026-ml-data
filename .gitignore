@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 wc2026_recent_results.csv
 .DS_Store
+.claude/
