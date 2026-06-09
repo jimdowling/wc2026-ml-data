@@ -43,17 +43,54 @@ FG_CONFIG: dict[str, dict] = {
         "primary_key": ["country"],
         "event_time": "date",
         "description": "Pre-match Elo ratings per country over time.",
+        "feature_descriptions": {
+            "country": "Country/team name (canonical ratings spelling); join key.",
+            "date": "Date the Elo rating was effective (event time for PiT join).",
+            "elo_rating": "World Football Elo rating of the team on that date.",
+        },
     },
     "fifa_ratings.csv": {
         "primary_key": ["country"],
         "event_time": "date",
         "description": "FIFA world ranking points per country over time.",
+        "feature_descriptions": {
+            "country": "Country/team name (canonical ratings spelling); join key.",
+            "date": "Date the FIFA ranking was published (event time for PiT join).",
+            "ranking": "FIFA/Coca-Cola world ranking position (1 = best) on that date.",
+            "points": "FIFA ranking points for the team on that date.",
+        },
     },
     "FIFA2026_schedule_Fixtures.csv": {
         "primary_key": ["match_number"],
         "event_time": "date_dt",
         "description": "FIFA World Cup 2026 fixture schedule.",
+        "feature_descriptions": {
+            "date": "Kick-off date of the fixture as a display string.",
+            "match_number": "Fixture identifier, 'Match N' (1-104); primary key.",
+            "teams": "The two sides, as concrete teams or unresolved slot strings "
+                     "(e.g. 'Group A winners', 'Winner match 73').",
+            "group": "Group label ('Group A'..'Group L') for group-stage games; "
+                     "empty for knockout fixtures.",
+            "stadium": "Host stadium / venue of the fixture.",
+            "date_dt": "Kick-off date parsed to a timestamp (event time).",
+        },
     },
+}
+
+# Per-feature descriptions for the downloaded recent-results feature group.
+RECENT_RESULTS_FEATURE_DESCRIPTIONS: dict[str, str] = {
+    "date": "Match date (event time for PiT join); part of primary key.",
+    "country": "WC2026 team whose perspective this row takes; part of PK.",
+    "home_away": "Whether 'country' played 'home' or 'away' in this match.",
+    "wc_team_score": "Goals scored by 'country' (LEAKY — not a model feature).",
+    "opposition_score": "Goals scored by the opponent (LEAKY — not a feature).",
+    "result": "Outcome from 'country' view: 'win' / 'draw' / 'loss' (label).",
+    "match_type": "'competitive' or 'friendly'.",
+    "opposition_country": "Opponent team name; part of primary key.",
+    "home_team": "Name of the home side in the original fixture.",
+    "away_team": "Name of the away side in the original fixture.",
+    "tournament": "Competition the match belonged to.",
+    "source_file": "openfootball source path the match was parsed from.",
 }
 
 # ---------------------------------------------------------------------------
@@ -161,6 +198,19 @@ def prepare_dataframe(df: pd.DataFrame, event_time: str | None) -> pd.DataFrame:
     return df
 
 
+def apply_feature_descriptions(fg, descriptions: dict[str, str] | None) -> None:
+    """Set a one-line description on each column so the schema self-documents
+    in the Hopsworks UI (the FG-level description alone leaves columns empty)."""
+    if not descriptions:
+        return
+    for col, desc in descriptions.items():
+        try:
+            fg.update_feature_description(col, desc)
+        except Exception as exc:  # don't fail the load over a stray column name
+            print(f"  WARN: could not describe {fg.name}.{col}: {exc}",
+                  file=sys.stderr)
+
+
 def load_csv_to_feature_group(fs, csv_path: Path, fg_version: int) -> LoadResult:
     df = pd.read_csv(csv_path)
     cfg = infer_fg_config(df, csv_path.name)
@@ -179,6 +229,7 @@ def load_csv_to_feature_group(fs, csv_path: Path, fg_version: int) -> LoadResult
         online_enabled=False,
     )
     fg.insert(df)
+    apply_feature_descriptions(fg, cfg.get("feature_descriptions"))
     return LoadResult(fg_name=fg_name, rows=len(df), columns=list(df.columns))
 
 
@@ -347,6 +398,7 @@ def load_recent_results_to_feature_group(fs, df: pd.DataFrame, fg_version: int) 
         online_enabled=False,
     )
     fg.insert(df)
+    apply_feature_descriptions(fg, RECENT_RESULTS_FEATURE_DESCRIPTIONS)
     return LoadResult(fg_name=RECENT_RESULTS_FG, rows=len(df), columns=list(df.columns))
 
 
