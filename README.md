@@ -13,13 +13,30 @@ and the recent results are written to the `wc2026_recent_results` feature group.
 | `data/elo_ratings.csv` | `elo_ratings` | `country, date` | `date` |
 | `data/fifa_ratings.csv` | `fifa_ratings` | `country, date` | `date` |
 | `data/FIFA2026_schedule_Fixtures.csv` | `fifa2026_schedule_fixtures` | `match_number` | `date_dt` |
-| openfootball/internationals (downloaded) | `wc2026_recent_results` | `country, date, opposition_country` | `date` |
+| openfootball/internationals (downloaded) | `wc2026_recent_results` | `country, date` | `date` |
 
 The `wc2026_recent_results` feature group holds the **20 most recent** men's
 senior international matches per WC2026 team, downloaded from
 [openfootball/internationals](https://github.com/openfootball/internationals)
 (48 teams × 20 = 960 rows). Pass `--skip-recent-results` to load only the
 `data/*.csv` feature groups.
+
+### Refreshing the Elo ratings
+
+`data/elo_ratings.csv` is populated from the per-year results files published by
+[eloratings.net](https://www.eloratings.net) (`<YEAR>_results.tsv`), which list
+every A-international with both teams' post-match World Football Elo. To add (or
+top up) a calendar year's coverage so the point-in-time join can resolve ratings
+as of older match dates:
+
+```bash
+python src/feature/fetch_elo_ratings.py 2024            # add all of 2024
+python src/feature/fetch_elo_ratings.py 2022 2023 2024  # several years
+```
+
+It merges new `(country, date)` rows into `data/elo_ratings.csv` without
+overwriting existing rows, restricting to the countries already tracked in the
+file (pass `--all-teams` to keep every country).
 
 Any other CSV dropped into `data/` is loaded automatically: the feature group
 name is derived from the filename, the event time is taken from a `date` column
