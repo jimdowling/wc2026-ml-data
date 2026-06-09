@@ -1,66 +1,66 @@
 date,match_number,teams,group,stadium,date_dt
 "Thursday, 11 June 2026",Match 1,Mexico v South Africa,Group A,Mexico City Stadium,2026-06-11
-"Thursday, 11 June 2026",Match 2,Korea Republic v Czechia/Denmark/North Macedonia/Republic of Ireland,Group A,Estadio Guadalajara,2026-06-11
-"Friday, 12 June 2026",Match 3,Canada v Bosnia and Herzegovina/Italy/Northern Ireland/Wales,Group B,Toronto Stadium,2026-06-12
+"Thursday, 11 June 2026",Match 2,Korea Republic v Czechia,Group A,Estadio Guadalajara,2026-06-11
+"Friday, 12 June 2026",Match 3,Canada v Bosnia and Herzegovina,Group B,Toronto Stadium,2026-06-12
 "Friday, 12 June 2026",Match 4,USA v Paraguay,Group D,Los Angeles Stadium,2026-06-12
 "Saturday, 13 June 2026",Match 5,Haiti v Scotland,Group C,Boston Stadium,2026-06-13
-"Saturday, 13 June 2026",Match 6,Australia v Kosovo/Romania/Slovakia/Türkiye,Group D,BC Place Vancouver,2026-06-13
+"Saturday, 13 June 2026",Match 6,Australia v Türkiye,Group D,BC Place Vancouver,2026-06-13
 "Saturday, 13 June 2026",Match 7,Brazil v Morocco,Group C,New York New Jersey Stadium,2026-06-13
 "Saturday, 13 June 2026",Match 8,Qatar v Switzerland,Group B,San Francisco Bay Area Stadium,2026-06-13
 "Sunday, 14 June 2026",Match 9,Côte d'Ivoire v Ecuador,Group E,Philadelphia Stadium,2026-06-14
 "Sunday, 14 June 2026",Match 10,Germany v Curaçao,Group E,Houston Stadium,2026-06-14
 "Sunday, 14 June 2026",Match 11,Netherlands v Japan,Group F,Dallas Stadium,2026-06-14
-"Sunday, 14 June 2026",Match 12,Albania/Poland/Sweden/Ukraine v Tunisia,Group F,Estadio Monterrey,2026-06-14
+"Sunday, 14 June 2026",Match 12,Sweden v Tunisia,Group F,Estadio Monterrey,2026-06-14
 "Monday, 15 June 2026",Match 13,Saudi Arabia v Uruguay,Group H,Miami Stadium,2026-06-15
 "Monday, 15 June 2026",Match 14,Spain v Cabo Verde,Group H,Atlanta Stadium,2026-06-15
 "Monday, 15 June 2026",Match 15,IR Iran v New Zealand,Group G,Los Angeles Stadium,2026-06-15
 "Monday, 15 June 2026",Match 16,Belgium v Egypt,Group G,Seattle Stadium,2026-06-15
 "Tuesday, 16 June 2026",Match 17,France v Senegal,Group I,New York New Jersey Stadium,2026-06-16
-"Tuesday, 16 June 2026",Match 18,Bolivia/Iraq/Suriname v Norway,Group I,Boston Stadium,2026-06-16
+"Tuesday, 16 June 2026",Match 18,Iraq v Norway,Group I,Boston Stadium,2026-06-16
 "Tuesday, 16 June 2026",Match 19,Argentina v Algeria,Group J,Kansas City Stadium,2026-06-16
 "Tuesday, 16 June 2026",Match 20,Austria v Jordan,Group J,San Francisco Bay Area Stadium,2026-06-16
 "Wednesday, 17 June 2026",Match 21,Ghana v Panama,Group L,Toronto Stadium,2026-06-17
 "Wednesday, 17 June 2026",Match 22,England v Croatia,Group L,Dallas Stadium,2026-06-17
-"Wednesday, 17 June 2026",Match 23,Portugal v Congo DR/Jamaica/New Caledonia,Group K,Houston Stadium,2026-06-17
+"Wednesday, 17 June 2026",Match 23,Portugal v Congo DR,Group K,Houston Stadium,2026-06-17
 "Wednesday, 17 June 2026",Match 24,Uzbekistan v Colombia,Group K,Mexico City Stadium,2026-06-17
-"Thursday, 18 June 2026",Match 25,Czechia/Denmark/North Macedonia/Republic of Ireland v South Africa,Group A,Atlanta Stadium,2026-06-18
-"Thursday, 18 June 2026",Match 26,Switzerland v Bosnia and Herzegovina/Italy/Northern Ireland/Wales,Group B,Los Angeles Stadium,2026-06-18
+"Thursday, 18 June 2026",Match 25,Czechia v South Africa,Group A,Atlanta Stadium,2026-06-18
+"Thursday, 18 June 2026",Match 26,Switzerland v Bosnia and Herzegovina,Group B,Los Angeles Stadium,2026-06-18
 "Thursday, 18 June 2026",Match 27,Canada v Qatar,Group B,BC Place Vancouver,2026-06-18
 "Thursday, 18 June 2026",Match 28,Mexico v Korea Republic,Group A,Estadio Guadalajara,2026-06-18
 "Friday, 19 June 2026",Match 29,Brazil v Haiti,Group C,Philadelphia Stadium,2026-06-19
 "Friday, 19 June 2026",Match 30,Scotland v Morocco,Group C,Boston Stadium,2026-06-19
-"Friday, 19 June 2026",Match 31,Kosovo/Romania/Slovakia/Türkiye v Paraguay,Group D,San Francisco Bay Area Stadium,2026-06-19
+"Friday, 19 June 2026",Match 31,Türkiye v Paraguay,Group D,San Francisco Bay Area Stadium,2026-06-19
 "Friday, 19 June 2026",Match 32,USA v Australia,Group D,Seattle Stadium,2026-06-19
 "Saturday, 20 June 2026",Match 33,Germany v Côte d'Ivoire,Group E,Toronto Stadium,2026-06-20
 "Saturday, 20 June 2026",Match 34,Ecuador v Curaçao,Group E,Kansas City Stadium,2026-06-20
-"Saturday, 20 June 2026",Match 35,Netherlands v Albania/Poland/Sweden/Ukraine,Group F,Houston Stadium,2026-06-20
+"Saturday, 20 June 2026",Match 35,Netherlands v Sweden,Group F,Houston Stadium,2026-06-20
 "Saturday, 20 June 2026",Match 36,Tunisia v Japan,Group F,Estadio Monterrey,2026-06-20
 "Sunday, 21 June 2026",Match 37,Uruguay v Cabo Verde,Group H,Miami Stadium,2026-06-21
 "Sunday, 21 June 2026",Match 38,Spain v Saudi Arabia,Group H,Atlanta Stadium,2026-06-21
 "Sunday, 21 June 2026",Match 39,Belgium v IR Iran,Group G,Los Angeles Stadium,2026-06-21
 "Sunday, 21 June 2026",Match 40,New Zealand v Egypt,Group G,BC Place Vancouver,2026-06-21
 "Monday, 22 June 2026",Match 41,Norway v Senegal,Group I,New York New Jersey Stadium,2026-06-22
-"Monday, 22 June 2026",Match 42,France v Bolivia/Iraq/Suriname,Group I,Philadelphia Stadium,2026-06-22
+"Monday, 22 June 2026",Match 42,France v Iraq,Group I,Philadelphia Stadium,2026-06-22
 "Monday, 22 June 2026",Match 43,Argentina v Austria,Group J,Dallas Stadium,2026-06-22
 "Monday, 22 June 2026",Match 44,Jordan v Algeria,Group J,San Francisco Bay Area Stadium,2026-06-22
 "Tuesday, 23 June 2026",Match 45,England v Ghana,Group L,Boston Stadium,2026-06-23
 "Tuesday, 23 June 2026",Match 46,Panama v Croatia,Group L,Toronto Stadium,2026-06-23
 "Tuesday, 23 June 2026",Match 47,Portugal v Uzbekistan,Group K,Houston Stadium,2026-06-23
-"Tuesday, 23 June 2026",Match 48,Colombia v Congo DR/Jamaica/New Caledonia,Group K,Estadio Guadalajara,2026-06-23
+"Tuesday, 23 June 2026",Match 48,Colombia v Congo DR,Group K,Estadio Guadalajara,2026-06-23
 "Wednesday, 24 June 2026",Match 49,Scotland v Brazil,Group C,Miami Stadium,2026-06-24
 "Wednesday, 24 June 2026",Match 50,Morocco v Haiti,Group C,Atlanta Stadium,2026-06-24
 "Wednesday, 24 June 2026",Match 51,Switzerland v Canada,Group B,BC Place Vancouver,2026-06-24
-"Wednesday, 24 June 2026",Match 52,Bosnia and Herzegovina/Italy/Northern Ireland/Wales v Qatar,Group B,Seattle Stadium,2026-06-24
-"Wednesday, 24 June 2026",Match 53,Czechia/Denmark/North Macedonia/Republic of Ireland v Mexico,Group A,Mexico City Stadium,2026-06-24
+"Wednesday, 24 June 2026",Match 52,Bosnia and Herzegovina v Qatar,Group B,Seattle Stadium,2026-06-24
+"Wednesday, 24 June 2026",Match 53,Czechia v Mexico,Group A,Mexico City Stadium,2026-06-24
 "Wednesday, 24 June 2026",Match 54,South Africa v Korea Republic,Group A,Estadio Monterrey,2026-06-24
 "Thursday, 25 June 2026",Match 55,Curaçao v Côte d'Ivoire,Group E,Philadelphia Stadium,2026-06-25
 "Thursday, 25 June 2026",Match 56,Ecuador v Germany,Group E,New York New Jersey Stadium,2026-06-25
-"Thursday, 25 June 2026",Match 57,Japan v Albania/Poland/Sweden/Ukraine,Group F,Dallas Stadium,2026-06-25
+"Thursday, 25 June 2026",Match 57,Japan v Sweden,Group F,Dallas Stadium,2026-06-25
 "Thursday, 25 June 2026",Match 58,Tunisia v Netherlands,Group F,Kansas City Stadium,2026-06-25
-"Thursday, 25 June 2026",Match 59,Kosovo/Romania/Slovakia/Türkiye v USA,Group D,Los Angeles Stadium,2026-06-25
+"Thursday, 25 June 2026",Match 59,Türkiye v USA,Group D,Los Angeles Stadium,2026-06-25
 "Thursday, 25 June 2026",Match 60,Paraguay v Australia,Group D,San Francisco Bay Area Stadium,2026-06-25
 "Friday, 26 June 2026",Match 61,Norway v France,Group I,Boston Stadium,2026-06-26
-"Friday, 26 June 2026",Match 62,Senegal v Bolivia/Iraq/Suriname,Group I,Toronto Stadium,2026-06-26
+"Friday, 26 June 2026",Match 62,Senegal v Iraq,Group I,Toronto Stadium,2026-06-26
 "Friday, 26 June 2026",Match 63,Egypt v IR Iran,Group G,Seattle Stadium,2026-06-26
 "Friday, 26 June 2026",Match 64,New Zealand v Belgium,Group G,BC Place Vancouver,2026-06-26
 "Friday, 26 June 2026",Match 65,Cabo Verde v Saudi Arabia,Group H,Houston Stadium,2026-06-26
@@ -70,7 +70,7 @@ date,match_number,teams,group,stadium,date_dt
 "Saturday, 27 June 2026",Match 69,Algeria v Austria,Group J,Kansas City Stadium,2026-06-27
 "Saturday, 27 June 2026",Match 70,Jordan v Argentina,Group J,Dallas Stadium,2026-06-27
 "Saturday, 27 June 2026",Match 71,Colombia v Portugal,Group K,Miami Stadium,2026-06-27
-"Saturday, 27 June 2026",Match 72,Congo DR/Jamaica/New Caledonia v Uzbekistan,Group K,Atlanta Stadium,2026-06-27
+"Saturday, 27 June 2026",Match 72,Congo DR v Uzbekistan,Group K,Atlanta Stadium,2026-06-27
 "Sunday, 28 June 2026",Match 73,Group A runners-up v Group B runners-up,,Los Angeles Stadium,2026-06-28
 "Monday, 29 June 2026",Match 74,Group E winners v  Group A/B/C/D/F third place,,Boston Stadium,2026-06-29
 "Monday, 29 June 2026",Match 75,Group F winners v Group C runners-up,,Estadio Monterrey,2026-06-29
