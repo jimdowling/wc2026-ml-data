@@ -4,3 +4,4 @@ __pycache__/
 wc2026_recent_results.csv
 .DS_Store
 .claude/
+.env
