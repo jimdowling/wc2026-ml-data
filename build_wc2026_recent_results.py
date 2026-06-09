@@ -86,7 +86,7 @@ RECENT_RESULTS_FEATURE_DESCRIPTIONS: dict[str, str] = {
     "opposition_score": "Goals scored by the opponent (LEAKY — not a feature).",
     "result": "Outcome from 'country' view: 'win' / 'draw' / 'loss' (label).",
     "match_type": "'competitive' or 'friendly'.",
-    "opposition_country": "Opponent team name; part of primary key.",
+    "opposition_country": "Opponent team name.",
     "home_team": "Name of the home side in the original fixture.",
     "away_team": "Name of the away side in the original fixture.",
     "tournament": "Competition the match belonged to.",
@@ -393,7 +393,7 @@ def load_recent_results_to_feature_group(fs, df: pd.DataFrame, fg_version: int) 
             "20 most recent men's senior international matches per WC2026 team, "
             "from openfootball/internationals."
         ),
-        primary_key=["country", "date", "opposition_country"],
+        primary_key=["country", "date"],
         event_time="date",
         online_enabled=False,
     )
