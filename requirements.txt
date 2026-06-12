@@ -1,0 +1,6 @@
+requests
+hopsworks
+xgboost
+scikit-learn
+numpy
+streamlit

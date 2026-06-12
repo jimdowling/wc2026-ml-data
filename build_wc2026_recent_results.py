@@ -10,8 +10,10 @@ Two things happen:
    ``elo_ratings``).
 2. The 20 most recent men's senior international matches for every team
    participating in the FIFA World Cup 2026 are downloaded from
-   openfootball/internationals and written to the ``wc2026_recent_results``
-   feature group.
+   openfootball/internationals, supplemented with any newer matches from
+   martj42/international_results (openfootball lags by weeks — e.g. it misses
+   the May/June 2026 pre-tournament friendlies), and written to the
+   ``wc2026_recent_results`` feature group.
 
 Usage:
   python build_wc2026_recent_results.py
@@ -90,7 +92,8 @@ RECENT_RESULTS_FEATURE_DESCRIPTIONS: dict[str, str] = {
     "home_team": "Name of the home side in the original fixture.",
     "away_team": "Name of the away side in the original fixture.",
     "tournament": "Competition the match belonged to.",
-    "source_file": "openfootball source path the match was parsed from.",
+    "source_file": "Source the match came from: an openfootball file path or "
+                   "martj42/international_results/results.csv.",
 }
 
 # ---------------------------------------------------------------------------
@@ -99,6 +102,10 @@ RECENT_RESULTS_FEATURE_DESCRIPTIONS: dict[str, str] = {
 
 RECENT_RESULTS_FG = "wc2026_recent_results"
 REPO_ZIP = "https://github.com/openfootball/internationals/archive/refs/heads/master.zip"
+# Supplementary source: regularly updated CSV of all international results.
+# openfootball master typically trails reality by weeks; this fills the gap
+# (e.g. the late-May/early-June 2026 pre-World-Cup friendlies).
+RESULTS_CSV = "https://raw.githubusercontent.com/martj42/international_results/master/results.csv"
 
 # Names chosen to match openfootball/internationals team names where possible.
 WC_TEAMS = [
@@ -130,6 +137,9 @@ ALIASES = {
     "Czechia": "Czech Republic",
     "Democratic Republic of the Congo": "DR Congo",
     "D. R. Congo": "DR Congo",
+    # openfootball says "China PR", martj42 says "China" — unify so the same
+    # match from both sources dedups to one key.
+    "China PR": "China",
 }
 
 MONTH = {m: i for i, m in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], start=1)}
@@ -317,6 +327,43 @@ def infer_match_type(tournament: str) -> str:
     return "friendly" if "friendly" in tournament.lower() else "competitive"
 
 
+def match_key(m: Match) -> tuple[str, str, str]:
+    """Dedup key for a match across sources (team names are canonical)."""
+    return (m.date.date().isoformat(), m.home_team, m.away_team)
+
+
+def download_results_csv_matches(url: str) -> list[Match]:
+    """Load played matches from the martj42/international_results CSV."""
+    df = pd.read_csv(url)
+    df = df.dropna(subset=["home_score", "away_score"])
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df = df.dropna(subset=["date"])
+    out: list[Match] = []
+    for r in df.itertuples():
+        out.append(Match(
+            date=r.date.to_pydatetime(),
+            home_team=canonical(r.home_team),
+            away_team=canonical(r.away_team),
+            home_score=int(r.home_score),
+            away_score=int(r.away_score),
+            tournament=str(r.tournament),
+            venue=f"{r.city}, {r.country}",
+            source_file="martj42/international_results/results.csv",
+        ))
+    return out
+
+
+def merge_supplementary_matches(matches: list[Match], extra: list[Match]) -> list[Match]:
+    """Add matches from the supplementary source that the primary lacks."""
+    seen = {match_key(m) for m in matches}
+    added = [m for m in extra if match_key(m) not in seen]
+    if added:
+        latest = max(m.date for m in added)
+        print(f"Supplemented {len(added):,} matches missing from openfootball "
+              f"(latest: {latest.date().isoformat()})", file=sys.stderr)
+    return matches + added
+
+
 def build_recent_results(matches: list[Match], teams: list[str], before_date: str | None) -> pd.DataFrame:
     teamset = {canonical(t) for t in teams}
     cutoff = pd.to_datetime(before_date) if before_date else None
@@ -351,12 +398,16 @@ def build_recent_results(matches: list[Match], teams: list[str], before_date: st
         return df
     df["date_sort"] = pd.to_datetime(df["date"])
     df = df.sort_values(["country", "date_sort"], ascending=[True, False])
+    # The FG primary key is [country, date]; collapse any cross-source
+    # duplicates here so they don't eat into the 20-match window.
+    df = df.drop_duplicates(subset=["country", "date"], keep="first")
     df = df.groupby("country", group_keys=False).head(20)
     df = df.drop(columns=["date_sort"]).reset_index(drop=True)
     return df
 
 
-def download_recent_results(repo_zip: str, before_date: str | None) -> pd.DataFrame:
+def download_recent_results(repo_zip: str, before_date: str | None,
+                            results_csv: str | None = RESULTS_CSV) -> pd.DataFrame:
     import requests
 
     print(f"Fetching {repo_zip} ...", file=sys.stderr)
@@ -371,6 +422,11 @@ def download_recent_results(repo_zip: str, before_date: str | None) -> pd.DataFr
     for path, text in iter_txt_files_from_zip(zip_bytes):
         matches.extend(parse_file(path, text))
     print(f"Parsed {len(matches):,} matches", file=sys.stderr)
+
+    if results_csv:
+        print(f"Fetching {results_csv} ...", file=sys.stderr)
+        matches = merge_supplementary_matches(
+            matches, download_results_csv_matches(results_csv))
 
     df = build_recent_results(matches, WC_TEAMS, before_date)
     counts = df.groupby("country").size().sort_values() if not df.empty else pd.Series(dtype=int)
@@ -391,7 +447,8 @@ def load_recent_results_to_feature_group(fs, df: pd.DataFrame, fg_version: int) 
         version=fg_version,
         description=(
             "20 most recent men's senior international matches per WC2026 team, "
-            "from openfootball/internationals."
+            "from openfootball/internationals supplemented with "
+            "martj42/international_results."
         ),
         primary_key=["country", "date"],
         event_time="date",
@@ -410,6 +467,9 @@ def main() -> int:
                     help="Include recent-result matches on or before this date")
     ap.add_argument("--repo-zip", default=REPO_ZIP,
                     help="openfootball/internationals zip URL or local zip path")
+    ap.add_argument("--results-csv", default=RESULTS_CSV,
+                    help="Supplementary results CSV (martj42/international_results) "
+                         "URL or local path; pass '' to disable")
     ap.add_argument("--skip-recent-results", action="store_true",
                     help="Only load the data/*.csv feature groups, skip the download")
     args = ap.parse_args()
@@ -425,7 +485,8 @@ def main() -> int:
     # we start writing to the feature store.
     recent_df: pd.DataFrame | None = None
     if not args.skip_recent_results:
-        recent_df = download_recent_results(args.repo_zip, args.before_date)
+        recent_df = download_recent_results(args.repo_zip, args.before_date,
+                                            args.results_csv or None)
 
     import hopsworks
 
